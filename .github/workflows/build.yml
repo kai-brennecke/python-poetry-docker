@@ -69,22 +69,22 @@ jobs:
         with:
           context: .
           load: true
-          tags: ghcr.io/pumbaasdad/poetry:test
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Get Image Version
         id: version
         run: |
-          docker run ghcr.io/pumbaasdad/poetry:test sh -c 'echo alpine=$(cat /etc/alpine-release)' >> $GITHUB_OUTPUT
-          docker run ghcr.io/pumbaasdad/poetry:test sh -c 'echo python=$(cat .container_version | grep ^Python | grep -Eo [0-9]{1,}.[0-9]{1,}.[0-9]{1,})' >> $GITHUB_OUTPUT
-          docker run ghcr.io/pumbaasdad/poetry:test sh -c 'echo poetry=$(cat .container_version | grep ^Poetry | grep -Eo [0-9]{1,}.[0-9]{1,}.[0-9]{1,})' >> $GITHUB_OUTPUT
+          docker run ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local sh -c 'echo alpine=$(cat /etc/alpine-release)' >> $GITHUB_OUTPUT
+          docker run ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local sh -c 'echo python=$(cat .container_version | grep ^Python | grep -Eo [0-9]{1,}.[0-9]{1,}.[0-9]{1,})' >> $GITHUB_OUTPUT
+          docker run ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local sh -c 'echo poetry=$(cat .container_version | grep ^Poetry | grep -Eo [0-9]{1,}.[0-9]{1,}.[0-9]{1,})' >> $GITHUB_OUTPUT
 
       - name: Set full version
         run: echo CONTAINER_VERSION=${{ steps.version.outputs.poetry }}-python-${{ steps.version.outputs.python }}-alpine-${{ steps.version.outputs.alpine }} >> $GITHUB_ENV
 
       - name: Pull existing image
         id: image-exists
-        run: docker pull ghcr.io/pumbaasdad/poetry:${{ env.CONTAINER_VERSION }}
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.CONTAINER_VERSION }}
         continue-on-error: true
 
       - name: Push Docker Image
@@ -94,7 +94,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.output.tags }},ghcr.io/pumbaasdad/poetry:${{ env.CONTAINER_VERSION }}
+          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.CONTAINER_VERSION }}
           labels: ${{ steps.meta.outputs.labels }}
 
       # Sign the resulting Docker image digest.
@@ -106,7 +106,7 @@ jobs:
         if: ${{ steps.image-exists.conclusion == 'success' && steps.image-exists.outcome == 'failure' }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          TAGS: ${{ steps.meta.output.tags }},ghcr.io/pumbaasdad/poetry:${{ env.CONTAINER_VERSION }}
+          TAGS: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.CONTAINER_VERSION }}
           DIGEST: ${{ steps.build.outputs.digest }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
