@@ -24,6 +24,10 @@ jobs:
       contents: read
       packages: write
       id-token: write
+    outputs:
+      create-tags: ${{ steps.image-exists.conclusion == 'success' && steps.image-exists.outcome == 'failure' }}
+      semver-tag: ${{ steps.version.outputs.poetry }}
+      date-tag: ${{ steps.version.outputs.date }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.1.1
@@ -78,8 +82,9 @@ jobs:
           docker run ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local sh -c 'echo alpine=$(cat /etc/alpine-release)' >> $GITHUB_OUTPUT
           docker run ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local sh -c 'echo python=$(cat .container_version | grep ^Python | grep -Eo [0-9]{1,}.[0-9]{1,}.[0-9]{1,})' >> $GITHUB_OUTPUT
           docker run ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:local sh -c 'echo poetry=$(cat .container_version | grep ^Poetry | grep -Eo [0-9]{1,}.[0-9]{1,}.[0-9]{1,})' >> $GITHUB_OUTPUT
+          echo date=$(date +'%Y-%m-%d') >> $GITHUB_OUTPUT
 
-      - name: Set Versions
+      - name: Set Full Version
         run: |
           echo FULL_VERSION=${{ steps.version.outputs.poetry }}-python-${{ steps.version.outputs.python }}-alpine-${{ steps.version.outputs.alpine }} >> $GITHUB_ENV
 
@@ -112,3 +117,17 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo -n "${TAGS}" | xargs --verbose -d "," -I {} cosign sign --yes {}@${DIGEST}
+
+  tag-and-release-semver:
+    needs: [build-and-publish]
+    uses: ./.github/workflows/tag-and-release.yml
+    with:
+      create: ${{ needs.build-and-publish.outputs.create-tags }}
+      tag: ${{ needs.build-and-publish.outputs.semver-tag }}
+
+  tag-and-release-date:
+    needs: [build-and-publish]
+    uses: ./.github/workflows/tag-and-release.yml
+    with:
+      create: ${{ needs.build-and-publish.outputs.create-tags }}
+      tag: ${{ needs.build-and-publish.outputs.date-tag }}
