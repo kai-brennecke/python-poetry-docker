@@ -85,7 +85,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.output.tags },ghcr.io/pumbaasdad/poetry:${{ env.CONTAINER_VERSION }}
+          tags: ${{ steps.meta.output.tags }},ghcr.io/pumbaasdad/poetry:${{ env.CONTAINER_VERSION }}
           labels: ${{ steps.meta.outputs.labels }}
 
       # Sign the resulting Docker image digest.
