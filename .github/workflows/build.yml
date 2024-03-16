@@ -9,6 +9,15 @@ env:
   IMAGE_NAME: ${{ github.repository_owner }}/poetry
 
 jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.1
+
+      - name: Keep Workflow Alive
+        uses: gautamkrishnar/keepalive-workflow@v2
+
   build-and-publish:
     runs-on: ubuntu-latest
     permissions:
