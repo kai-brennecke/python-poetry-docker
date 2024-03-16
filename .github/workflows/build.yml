@@ -122,12 +122,12 @@ jobs:
     needs: [build-and-publish]
     uses: ./.github/workflows/tag-and-release.yml
     with:
-      create: ${{ needs.build-and-publish.outputs.create-tags }}
+      create: ${{ needs.build-and-publish.outputs.create-tags == 'true' }}
       tag: ${{ needs.build-and-publish.outputs.semver-tag }}
 
   tag-and-release-date:
     needs: [build-and-publish]
     uses: ./.github/workflows/tag-and-release.yml
     with:
-      create: ${{ needs.build-and-publish.outputs.create-tags }}
+      create: ${{ needs.build-and-publish.outputs.create-tags == 'true' }}
       tag: ${{ needs.build-and-publish.outputs.date-tag }}
