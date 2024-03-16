@@ -97,7 +97,7 @@ jobs:
         if: ${{ steps.image-exists.conclusion == 'success' && steps.image-exists.outcome == 'failure' }}
         env:
           # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          TAGS: ${{ steps.meta.output.tags },ghcr.io/pumbaasdad/poetry:${{ env.CONTAINER_VERSION }}
+          TAGS: ${{ steps.meta.output.tags }},ghcr.io/pumbaasdad/poetry:${{ env.CONTAINER_VERSION }}
           DIGEST: ${{ steps.build.outputs.digest }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
