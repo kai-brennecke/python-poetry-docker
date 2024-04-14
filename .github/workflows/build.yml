@@ -100,7 +100,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FULL_VERSION }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.poetry }}
+          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FULL_VERSION }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           labels: ${{ steps.meta.outputs.labels }}
 
       # Sign the resulting Docker image digest.
@@ -117,13 +117,6 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo -n "${TAGS}" | xargs --verbose -d "," -I {} cosign sign --yes {}@${DIGEST}
-
-  tag-and-release-semver:
-    needs: [build-and-publish]
-    uses: ./.github/workflows/tag-and-release.yml
-    with:
-      create: ${{ needs.build-and-publish.outputs.create-tags == 'true' }}
-      tag: ${{ needs.build-and-publish.outputs.semver-tag }}
 
   tag-and-release-date:
     needs: [build-and-publish]
