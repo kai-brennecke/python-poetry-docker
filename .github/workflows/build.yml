@@ -2,7 +2,7 @@ name: Docker Build and Publish
 
 on:
   schedule:
-    - cron: "11 7 * * *"
+    - cron: "00 3 * * *"
 
 env:
   REGISTRY: ghcr.io
@@ -63,7 +63,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           sep-tags: ','
           flavor: latest=true
-          tags: type=schedule,pattern={{date 'YYYY-MM-DD' tz='America/Toronto'}}
+          tags: type=schedule,pattern={{date 'YYYY-MM-DD' tz='Europe/Berlin'}}
 
 
       # Build and push Docker image with Buildx
