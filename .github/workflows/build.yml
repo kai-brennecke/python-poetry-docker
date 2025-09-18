@@ -3,6 +3,7 @@ name: Docker Build and Publish
 on:
   schedule:
     - cron: "00 3 * * *"
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
