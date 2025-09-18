@@ -33,13 +33,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4.1.1
 
-      # Install the cosign tool except on PR
-      # https://github.com/sigstore/cosign-installer
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.4.0
-        with:
-          cosign-release: 'v2.2.2'
-
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
       # https://github.com/docker/setup-buildx-action
@@ -103,21 +96,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FULL_VERSION }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      # Sign the resulting Docker image digest.
-      # This will only write to the public Rekor transparency log when the Docker
-      # repository is public to avoid leaking data.  If you would like to publish
-      # transparency data even for private images, pass --force to cosign below.
-      # https://github.com/sigstore/cosign
-      - name: Sign the published Docker image
-        if: ${{ steps.image-exists.conclusion == 'success' && steps.image-exists.outcome == 'failure' }}
-        env:
-          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
-          TAGS: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.FULL_VERSION }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.poetry }}
-          DIGEST: ${{ steps.build.outputs.digest }}
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
-        run: echo -n "${TAGS}" | xargs --verbose -d "," -I {} cosign sign --yes {}@${DIGEST}
 
   tag-and-release-date:
     needs: [build-and-publish]
