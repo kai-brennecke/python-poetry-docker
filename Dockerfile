@@ -1,10 +1,9 @@
-FROM python:alpine
+FROM python:3.13.7-alpine3.22
 
 ENV POETRY_NO_INTERACTION=1 \
   POETRY_VIRTUALENVS_CREATE=false
 
-RUN apk upgrade --update && \
-    apk add curl && \
+RUN apk add --no-cache curl && \
     curl -sSL https://install.python-poetry.org | python3 - && \
     apk del curl
 
